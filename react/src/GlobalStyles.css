@@ -1,0 +1,133 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+:root {
+  /* Light Theme (Facebook's Default) */
+  --main-bg-color: rgb(205, 212, 255);  /* White background */
+  --secondary-bg-color: rgb(242, 242, 242);  /* Light gray background */
+  --third-bg-color: rgb(230, 230, 230);  /* Even lighter gray background */
+  --fourth-bg-color: rgb(216, 216, 216);  /* Lightest gray background */
+  --text-color: rgb(28, 30, 33);  /* Nearly black text */
+  --accent-color: rgb(24, 119, 242);  /* Facebook blue */
+  --border-color: rgb(200, 200, 200);  /* Border color */
+}
+
+/* Dark Theme (Hypothetical Facebook Dark Mode) */
+[data-theme='dark'] {
+  --main-bg-color: rgb(18, 18, 18);  /* Almost Black */
+  --secondary-bg-color: rgb(28, 28, 28);  /* Dark Gray */
+  --third-bg-color: rgb(38, 38, 38);  /* Even Darker Gray */
+  --fourth-bg-color: rgb(48, 48, 48);  /* Darkest Gray */
+  --text-color: rgb(255, 255, 255);  /* White Text */
+  --accent-color: rgb(24, 119, 242);  /* Facebook Blue remains the same */
+  --border-color: rgb(80, 80, 80);  /* Border color in dark mode */
+}
+
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--main-bg-color);
+  margin: 0;  /* Remove default margin */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;  /* Make sure body takes up full viewport height */
+}
+
+input {
+  background-color: var(--secondary-bg-color);
+  color: var(--text-color);  /* or you can use var(--text-color) if it's set to white */
+  border: none;
+  border-bottom: 1px solid white;  /* Adds a white line underneath */
+  outline: none;  /* Optional: removes focus outline */
+  margin: 10px;
+  
+  font-family: 'Poppins', sans-serif;
+}
+
+h3 {
+
+  color: var(--text-color);
+  margin: 10px;
+
+}
+
+label {
+  color: var(--text-color);
+  margin: 10px;
+}
+
+#error {
+
+  color: red;
+  margin: 10px;
+}
+
+
+#container {
+  height: 750px;  /* added px unit */
+  width: 700px;  /* added px unit */
+  background-color: var(--secondary-bg-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 25px;
+}
+
+button {
+  font-family: 'Poppins', sans-serif;
+  height: 35px;
+  width: 150px;
+  border-radius: 11px;
+  margin: 20px;
+  border: none;
+  transition: all 0.3s;  /* Corrected: Added 's' for seconds */
+  background: var(--accent-color);
+  color: var(--text-color);
+}
+
+button:hover {
+  background-color: var(--third-bg-color);
+}
+
+h1 {
+
+  color: var(--text-color);
+  margin: 10px;
+
+}
+
+h2 {
+
+  color: var(--text-color);
+  margin: 10px;
+  
+}
+
+#input-label {
+
+  display: block;
+  margin: 10px;
+  border: none;
+  width: 100px;
+}
+
+#input-field{
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  border-color: var(--text-color);
+}
+
+
+#input-div {
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
