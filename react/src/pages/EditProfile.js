@@ -6,114 +6,132 @@ import { useState } from 'react';
 import ToggleButton from '../components/ToggleButton';
 import CheckAuthButton from '../components/CheckAuthButton';
 
+import useFetchUserData from '../hooks/useFetchUserData';
+
 const EditProfile = () => {
 
+  const [isDisabled, setIsDisabled] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+
   const navigate = useNavigate();
+  
+  const [userData, error] = useFetchUserData('http://127.0.0.1:8000/get-account-data/');
+
+  const [message, setMessage] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [first_name, setFirstName] = useState('');
   const [last_name, setLastName] = useState('');
-  const [message, setMessage] = useState('');
-  const [is_activated, setIsActivated] = useState('Not Verified');
+
+  const [initialUsername, setInitialUsername] = useState('');
+  const [initialEmail, setInitialEmail] = useState('');
+  const [initialFirstName, setInitialFirstName] = useState('');
+  const [initialLastName, setInitialLastName] = useState('');
+
+  // Watch for changes in userData and update state accordingly
+  useEffect(() => {
+    if (userData) {
+      setUsername(userData.username || '');
+      setEmail(userData.email || '');
+      setFirstName(userData.first_name || '');
+      setLastName(userData.last_name || '');
+
+      setInitialUsername(userData.username || '');
+      setInitialEmail(userData.email || '');
+      setInitialFirstName(userData.first_name || '');
+      setInitialLastName(userData.last_name || '');
+    }
+  }, [userData]);
+
+  useEffect(() => {
+    if (
+      (first_name.trim() !== initialFirstName || last_name.trim() !== initialLastName || username.trim() !== initialUsername || email.trim() !== initialEmail) &&
+      first_name.trim() !== '' &&
+      last_name.trim() !== '' &&
+      username.trim() !== '' &&
+      email.trim() !== ''
+    ) {
+      setIsDisabled(false);
+    } else {
+      setIsDisabled(true);
+    }
+  }, [first_name, last_name, username, email, initialFirstName, initialLastName, initialUsername, initialEmail]);
   
+
+  const update_data = async () => {
+
+    try {
+
+        setIsLoading(true);
+
+        const token = localStorage.getItem('access_token');
+
+        const dataToSend = {};
+
+        if (first_name && first_name.trim() !== "") {
+            dataToSend.first_name = first_name;
+        }
+        if (last_name && last_name.trim() !== "") {
+            dataToSend.last_name = last_name;
+        }
+        if (username && username.trim() !== "") {
+            dataToSend.username = username;
+        }
+        if (email && email.trim() !== "") {
+            dataToSend.email = email;
+        }
+
+        // Make POST request to update user details
+        const response = await axios.post('http://127.0.0.1:8000/edit_profile/', 
+
+            dataToSend, 
+            {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            }
+        );
+
+        if (response.status === 200) {
+
+            setIsLoading(false);
+            const userData = response.data;
+
+            setUsername(userData.username);
+            setFirstName(userData.first_name);
+            setLastName(userData.last_name);
+
+            // Update localStorage with the new data
+            localStorage.setItem('user_data', JSON.stringify(userData));
+
+            setMessage('User details updated successfully!');
+        }
+
+    } catch (error) {
+
+        setIsLoading(false);
+        console.error("There was an error updating user details:", error);
+        setMessage('Something went wrong :/');
+
+    };
+  }
+
   const redirect = () => {
 
     console.log("Redirect called");  // Debugging line
     navigate('/home');
 
   }
-
-  useEffect(() => {
-    
-    try {
-
-      // Assuming you need to send the access token to validate the request
-      const token = localStorage.getItem('access_token');
-
-      // Make GET request to fetch user details
-      axios.get('http://127.0.0.1:8000/get-account-data/', {
-
-        headers: {
-
-          'Authorization': `Bearer ${token}`
-        }
-
-      })
-      .then(response => {
-        
-      // If request is successful, populate state
-        if (response.status === 200) {
-
-          console.log("response data:", response.data);
-
-          setUsername(response.data.username);
-          setEmail(response.data.email);
-          setFirstName(response.data.first_name);
-          setLastName(response.data.last_name);
-          setIsActivated(response.data.is_activated ? 'Verified' : 'Not Verified');
-
-        }
-      })
-    } catch (error) {
-
-      console.error("There was an error fetching user details:", error);
-
-    };
-
-  }, []); 
-
-  const update_data = async () => {
-
-    try {
-
-      // Assuming you need to send the access token to validate the request
-      const token = localStorage.getItem('access_token');
-
-      // Make POST request to update user details
-      const response = await axios.post('http://127.0.0.1:8000/edit_profile/', 
-      
-        {
-          first_name,
-          last_name,
-          username,
-          email,
-        }, 
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
-
-      if (response.status === 200) {
-
-        const userData = response.data;
-
-        setUsername(userData.username);
-        setFirstName(userData.first_name);
-        setLastName(userData.last_name);
-        setIsActivated(userData.is_activated ? 'Verified' : 'Not Verified');
-
-        // Update localStorage with the new data
-        localStorage.setItem('user_data', JSON.stringify(userData));
-
-        setMessage('User details updated successfully!');
-        
-      }
-
-    } catch (error) {
-
-      console.error("There was an error updating user details:", error);
-      setMessage('Something went wrong :/');
-
-    };
-
-  }
   
-
   return (
     <div>
       <div id="container">
+
+        {isLoading && (
+          <div className="loading-overlay">
+            <div className="loading-spinner"></div>
+          </div>
+        )}
 
         <label>{message}</label>
         
@@ -125,6 +143,7 @@ const EditProfile = () => {
           <input
                   id='input-field'
                   type = "text"
+                  value = {first_name}
                   placeholder={first_name}
                   onChange={e => setFirstName(e.target.value)}
 
@@ -139,6 +158,7 @@ const EditProfile = () => {
                   
                   id='input-field'
                   type = "text"
+                  value = {last_name}
                   placeholder={last_name}
                   onChange={e => setLastName(e.target.value)}
 
@@ -153,6 +173,7 @@ const EditProfile = () => {
 
                   id='input-field'
                   type = "text"
+                  value = {username}
                   placeholder={username}
                   onChange={e => setUsername(e.target.value)}
 
@@ -167,6 +188,7 @@ const EditProfile = () => {
 
                   id='input-field'
                   type = "text"
+                  value = {email}
                   placeholder={email}
                   onChange={e => setEmail(e.target.value)}
 
@@ -176,7 +198,7 @@ const EditProfile = () => {
 
         <button onClick={redirect}>Back</button>
         
-        <button onClick={update_data}>Update</button>
+        <button disabled={isDisabled} onClick={update_data}>Update</button>
 
         <ToggleButton/>
 

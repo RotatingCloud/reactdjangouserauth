@@ -12,6 +12,8 @@ const Home = () => {
   const [last_name, setLastName] = useState('');
   const [is_activated, setIsActivated] = useState('Not Verified');
   const [message, setMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
 
   useEffect(() => {
 
@@ -83,6 +85,8 @@ const Home = () => {
 
   const verify_account = () => {
 
+    setIsLoading(true);
+
     axios.post('http://127.0.0.1:8000/resend-activation-email/', {
       username,
     }, {
@@ -92,18 +96,43 @@ const Home = () => {
     })
     .then((response) => {
 
+      setIsLoading(false);
+
       console.log("This is the response: ", response)
 
-      if(response.data.status === 200) {
-        setMessage("Verification email sent!");
+      if(response.status === 200) {
+
+        setMessage("Verification email sent!")
+        console.log("Verification email sent!")
+
+        setTimeout(() => {
+          setMessage('');
+        }, 5000);
+
       }
+    })
+    .catch((error) => {
+
+      setIsLoading(false);
+      setMessage("Error sending verification email!");
+      console.error("Error sending verification email!", error);
+
+      setTimeout(() => {
+        setMessage('');
+      }, 5000);
 
     })
+    
 
   };
 
   return (
     <div id='container'>
+      {isLoading && (
+        <div className="loading-overlay">
+          <div className="loading-spinner"></div>
+        </div>
+      )}
       <label>{message}</label>
       <h1>{first_name} <i>"{username}"</i> {last_name}</h1>
       <h3>Account Status: {is_activated}</h3>
