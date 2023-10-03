@@ -10,12 +10,7 @@ const Login = () => {
     const [password, setPassword] = useState("");
     const [error, setError] = useState(null);
     const navigate = useNavigate();
-  
-    const go_to_register = () => {
 
-      navigate('./register');
-
-    };
   
     const login = async () => {
 
@@ -58,6 +53,8 @@ const Login = () => {
     }
 
     const forgot_password = () => { navigate('/request-change-password') }
+  
+    const go_to_register = () => { navigate('./register') }
 
     return (
 

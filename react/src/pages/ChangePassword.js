@@ -14,7 +14,7 @@ const ChangePassword = () => {
     const navigate = useNavigate();
 
     const redirect_login = () => {
-        console.log("Redirect called");  // Debugging line
+        console.log("Redirect called");
         navigate('/home');
     }
 

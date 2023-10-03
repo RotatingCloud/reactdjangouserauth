@@ -21,7 +21,7 @@ const Home = () => {
 
     if (!token) {
 
-      navigate('/'); // Redirect to login if no token is found
+      navigate('/');
       return;
 
     }

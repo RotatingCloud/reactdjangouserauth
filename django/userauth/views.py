@@ -12,7 +12,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.models import update_last_login
 from django.utils import timezone
 from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.core.mail import send_mail
 from .serializers import UserSerializer
@@ -21,7 +21,7 @@ import re
 @api_view(['POST'])
 def register(request):
 
-    print('signup:' + str(request.data))
+    print('register:' + str(request.data))
 
     if request.method == 'POST':
 
@@ -29,20 +29,21 @@ def register(request):
 
         print(serializer.is_valid())
 
+        # Validate the data
         if serializer.is_valid():
 
             username = serializer.validated_data.get('username')
             email = serializer.validated_data.get('email')
             password = serializer.validated_data.get('password')
-            firstname = serializer.validated_data.get('first_name', '')
-            lastname = serializer.validated_data.get('last_name', '')
 
+            # verify data
             if not username or not email or not password:
                 return Response({'error': 'All fields are required'}, status=status.HTTP_400_BAD_REQUEST)
             
             if not checkData(username, email, password):
                 return Response({'error': 'Invalid data'}, status=status.HTTP_400_BAD_REQUEST)
 
+            # check if user exists
             User = get_user_model()
             if User.objects.filter(username=username).exists():
                 return Response({'error': 'Username is already taken'}, status=status.HTTP_400_BAD_REQUEST)
@@ -50,16 +51,15 @@ def register(request):
             if User.objects.filter(email=email).exists():
                 return Response({'error': 'Email is already taken'}, status=status.HTTP_400_BAD_REQUEST)
 
+            # create user
             user = serializer.save()
-
-            print(user)
 
             refresh = TokenObtainPairSerializer.get_token(user)
             reg_token = str(refresh.access_token)
             reg_token = AccessToken.for_user(user)
-            reg_token.set_exp(lifetime=timedelta(minutes=10))
+            reg_token.set_exp(lifetime=timedelta(minutes=2))
             reg_token_str = str(reg_token)
-            print(reg_token_str)
+            #print(reg_token_str)
 
             send_activation_email(request)
 
@@ -150,12 +150,14 @@ def login(request):
         # The user is authenticated
         refresh = TokenObtainPairSerializer.get_token(user)
         access = str(refresh.access_token)
+
+        serializer = UserSerializer(user)
         
         return Response({
 
             'refresh': str(refresh),
             'access': access,
-            'user': user_data
+            'user': serializer.data
 
         }, status=status.HTTP_200_OK)
     
@@ -173,8 +175,6 @@ def logout(request):
 @permission_classes([IsAuthenticated])
 def check_auth(request):
     auth_token = request.META.get('HTTP_AUTHORIZATION', 'No token found')
-    
-
 
     if request.user.is_authenticated:
         
@@ -275,41 +275,6 @@ def change_password(request):
                 'error': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def delete_account(request):
-        
-            try:
-                User = get_user_model()
-                user = User.objects.get(id=request.user.id)
-        
-                # Fetch the request data. Assuming JSON payload in request.
-                request_data = request.data
-        
-                # Update fields
-                if 'password' in request_data:
-                    user.password = make_password(request_data['password'])
-                
-                # ... add other fields as necessary
-        
-                # Save the user object with updated fields
-                user.delete()
-        
-                return Response({
-                    'username': user.username,
-                    'email': user.email,
-                    'verified': user.is_activated,
-                }, status=status.HTTP_200_OK)
-                
-            except User.DoesNotExist:
-                return Response({
-                    'error': 'User does not exist'
-                }, status=status.HTTP_404_NOT_FOUND)
-            except Exception as e:
-                return Response({
-                    'error': str(e)
-                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_account_data(request):
